@@ -1,0 +1,11 @@
+ACCOUNTS 4
+1 Wallet "Cash Wallet" 1150
+2 DebitCard "My Debit" 400
+3 CreditCard "My Credit" 0 2000 0.18 0
+CATEGORIES 3
+1 "Food" -1
+2 "Transport" -1
+TRANSACTIONS 4
+1 1 200 1749455816 Income
+2 1 50 1749455816 Expense 1
+3 2 100 1749455816 Expense 2

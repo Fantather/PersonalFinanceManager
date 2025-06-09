@@ -1,12 +1,12 @@
 ﻿#pragma once
 #include "Account.h"
 
-// Обычный «кошелёк»(наличные или виртуальный счёт внутри приложения), без дополнительных ограничений или процентов.
-
+// Simple wallet (cash or virtual), no extra constraints
 class Wallet : public Account {
 public:
-	Wallet(int id, const std::string& name, double initial_balance = default_initial_balance) : Account(id, name, initial_balance) {}
-	~Wallet() override = default;
+    Wallet(int id, const std::string& name, double initial_balance = default_initial_balance)
+        : Account(id, name, initial_balance) {}
+    ~Wallet() override = default;
 
-	// Для кошелька withdraw/deposit работают «по умолчанию» (с учётом достаточности средств)
+    // Uses base deposit/withdraw behavior
 };

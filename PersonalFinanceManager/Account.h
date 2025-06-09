@@ -1,29 +1,26 @@
 ﻿#pragma once
 #include <string>
 
-// Обеспечивает единый интерфейс для работы с кошельками (class Wallet) и картами (class Card)
+// Provides a unified interface for Wallet and Card accounts
 class Account {
 protected:
-	int id_;				// Уникальный ID счёта
-	std::string name_;		// Имя/название (например, "Основной кошелёк" или "Visa Gold")
-	double balance_;		// Текущий баланс
-
-	
+    int    id_;               // Unique account ID
+    std::string name_;        // Account name (e.g. "Main Wallet", "Visa Gold")
+    double balance_;          // Current balance
 
 public:
-	// Default value for balance on card
-	static const double default_initial_balance;
+    static const double default_initial_balance;  // Default starting balance
 
-	// Constructor and Destructor
-	Account(const int id, const std::string& name, double initial_balance = default_initial_balance);
-	virtual ~Account() = default;
+    // Constructor & Destructor
+    Account(int id, const std::string& name, double initial_balance = default_initial_balance);
+    virtual ~Account() = default;
 
-	// Единый интерфейс пополнения/списания
-	virtual void deposit(double amount);	// Deposit card
-	virtual bool withdraw(double amount);	// Withdraw money
+    // Deposit / Withdraw interface
+    virtual void deposit(double amount);
+    virtual bool withdraw(double amount);
 
-	// Getter
-	int get_id() const { return id_; }
-	const std::string& get_name() const { return name_; }
-	double get_balance() const { return balance_; }
+    // Getters
+    int              get_id() const { return id_; }
+    const std::string& get_name() const { return name_; }
+    double           get_balance() const { return balance_; }
 };
