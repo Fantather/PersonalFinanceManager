@@ -73,7 +73,9 @@ bool FinanceManager::add_income(int account_id, double amount, const std::chrono
     Account* acc = get_account(account_id);
     if (!acc || amount <= 0) return false;
     acc->deposit(amount);
+
     int id = next_transaction_id_++;
+
     transactions_.push_back(std::make_unique<Income>(account_id, amount, timestamp, id));
     return true;
 }
@@ -82,7 +84,9 @@ bool FinanceManager::add_expense(int account_id, double amount, int category_id,
     Account* acc = get_account(account_id);
     if (!acc || amount <= 0) return false;
     if (!acc->withdraw(amount)) return false;
+
     int id = next_transaction_id_++;
+
     transactions_.push_back(std::make_unique<Expence>(account_id, amount, timestamp, id, category_id));
     return true;
 }
