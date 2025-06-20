@@ -39,7 +39,7 @@ int main() {
 
     // Record some transactions
     auto t0 = system_clock::now();
-    manager.add_income(walletId, 200.0, t0 - hours(24));        // yesterday income
+    manager.add_income(walletId, 200.0, t0 - hours(24));                // yesterday income
     manager.add_expense(walletId, 50.0, foodCat, t0 - hours(23));
     manager.add_expense(debitCardId, 100.0, transportCat, t0 - hours(2));
     manager.add_expense(creditCardId, 150.0, entertainmentCat, t0 - minutes(30));
@@ -71,15 +71,15 @@ int main() {
         std::cout << "Total expense: " << r.total_expence_ << std::endl;
         std::cout << "Expenses by category:" << std::endl;
         for (auto& [cid, sum] : r.expenses_by_category) {
-            std::cout << "  Category " << cid << ": " << sum << std::endl;
+            std::cout << "  Category id " << cid << ": " << sum << std::endl;
         }
         std::cout << "Top 3 transactions:" << std::endl;
         for (auto& [txid, amt] : r.top3_transactions) {
-            std::cout << "  Tx " << txid << ": " << amt << std::endl;
+            std::cout << "  Transaction id " << txid << ": " << amt << std::endl;
         }
         std::cout << "Top 3 categories:" << std::endl;
         for (auto& [cid, amt] : r.top3_categories) {
-            std::cout << "  Cat " << cid << ": " << amt << std::endl;
+            std::cout << "  Category id " << cid << ": " << amt << std::endl;
         }
     }
 

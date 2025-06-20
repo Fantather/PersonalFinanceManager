@@ -1,0 +1,51 @@
+
+
+
+=== Report from 2025-06-20 00:00:00.0000000 to 2025-06-21 00:00:00.0000000 ===
+Total expense: 250
+
+Expenses by category (category_id: amount):
+  [2]: 100
+  [3]: 150
+
+Top-3 transactions (transaction_id: amount):
+  [4]: 150
+  [3]: 100
+
+Top-3 categories (category_id: amount):
+  [3]: 150
+  [2]: 100
+
+
+=== Report from 2025-06-20 00:00:00.0000000 to 2025-06-27 00:00:00.0000000 ===
+Total expense: 250
+
+Expenses by category (category_id: amount):
+  [2]: 100
+  [3]: 150
+
+Top-3 transactions (transaction_id: amount):
+  [4]: 150
+  [3]: 100
+
+Top-3 categories (category_id: amount):
+  [3]: 150
+  [2]: 100
+
+
+=== Report from 2025-06-01 00:00:00.0000000 to 2025-07-01 10:29:06.0000000 ===
+Total expense: 250
+
+Expenses by category (category_id: amount):
+  [2]: 100
+  [3]: 150
+
+Top-3 transactions (transaction_id: amount):
+  [4]: 150
+  [3]: 100
+
+Top-3 categories (category_id: amount):
+  [3]: 150
+  [2]: 100
+
+

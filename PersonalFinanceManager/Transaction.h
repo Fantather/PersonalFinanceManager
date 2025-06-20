@@ -22,6 +22,6 @@ public:
 	int get_account_id() const { return account_id_; }
 
 	// To make the class abstract and distinguish Income vs Expense
-	virtual int get_category_id() const {}
+	virtual int get_category_id() const { return -1; }
 	virtual bool is_expence() const { return false; }
 };
