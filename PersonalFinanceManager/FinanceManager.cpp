@@ -50,9 +50,9 @@ int FinanceManager::add_category(const std::string& name, const int parentId) {
     return id;
 }
 
-bool FinanceManager::remove_category(const int category_id) {
-    return category_.erase(category_id) > 0;
-}
+//bool FinanceManager::remove_category(const int category_id) {
+//    return category_.erase(category_id) > 0;
+//}
 
 Category* FinanceManager::get_category(const int category_id) {
     auto it = category_.find(category_id);
@@ -67,7 +67,7 @@ bool FinanceManager::add_income(const int account_id, const double amount, const
 
     int id = next_transaction_id_++;
 
-    transactions_.insert(Income(amount, id, account_id, timestamp));                // Add the transaction to Boost
+    transactions_.insert(std::make_shared<Income>(amount, id, account_id, timestamp));                // Add the transaction to Boost
     return true;
 }
 
@@ -78,46 +78,57 @@ bool FinanceManager::add_expense(const int account_id, const double amount, cons
 
     int id = next_transaction_id_++;
 
-    transactions_.insert(Expence(amount, id, account_id, timestamp, category_id));  // Add the transaction to Boost
+    transactions_.insert(std::make_shared<Expence>(amount, id, account_id, timestamp, category_id));  // Add the transaction to Boost
     return true;
 }
 
 
 /*--- Work with Reports ---*/
-std::vector<const Transaction*> FinanceManager::create_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end)
+
+// Collects information about expenses in the specified period of time in the vector
+std::vector<std::shared_ptr<const Transaction>> FinanceManager::create_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end)
 {
-    const auto& idx = transactions_.get<ByDateSort>(); // Упорядоченный по дате
-    std::vector<const Transaction*> result;
-    auto it = idx.lower_bound(start);
-    while (it != idx.end() && it->get_timestamp() < end) {
-        if (it->is_expence()) result.push_back(&*it);
+    const auto& date_subtable = transactions_.get<ByDateSort>(); // Упорядоченный по дате
+    std::vector<std::shared_ptr<const Transaction>> result;
+    auto it = date_subtable.lower_bound(start);
+
+    while (it != date_subtable.end() && (*it)->get_timestamp() < end) {
+        if ((*it)->is_expence())
+        {
+            result.push_back(*it);
+        }
+
         ++it;
     }
     return result;
 }
 
+// Create and fills Structuttutu Report
+// Expenses by categories
+// 3 The largest expenses
+// 3 of the most costly categories
 std::unique_ptr<Report> FinanceManager::build_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end)
 {
     auto report = std::make_unique<Report>(start, end);
 
     // Categories expenses
-    std::map<int, double> by_category;
+    std::map<int, double> category_map;
 
     for (const auto& tx : transactions_.get<ByDateSort>())
     {
-        if (!tx.is_expence())
+        if (!(*tx).is_expence())
             continue;
 
-        auto timestamp = tx.get_timestamp();
+        auto timestamp = (*tx).get_timestamp();
         if (timestamp < start || timestamp >= end)
             continue;
 
-        int category_id = static_cast<const Expence&>(tx).get_category_id();
-        by_category[category_id] += tx.get_amount();
+        int category_id = static_cast<const Expence&>((*tx)).get_category_id();
+        category_map[category_id] += (*tx).get_amount();
 
-        report->total_expence_ += tx.get_amount();
+        report->total_expence_ += (*tx).get_amount();
     }
-    report->expenses_by_category = by_category;
+    report->expenses_by_category = category_map;
 
     // TOP-3 transactions by sum using the index ByAmountSort
     std::vector<std::pair<int, double>> top3_txs;
@@ -127,19 +138,19 @@ std::unique_ptr<Report> FinanceManager::build_report(const std::chrono::system_c
 
     while (it_amount != amount_subtable.begin() && top3_txs.size() < 3) {
         --it_amount;
-        if (!it_amount->is_expence())
+        if (!(*it_amount)->is_expence())
             continue;
-        auto ts = it_amount->get_timestamp();
 
+        auto ts = (*it_amount)->get_timestamp();
         if (ts < start || ts >= end)
             continue;
 
-        top3_txs.emplace_back(it_amount->get_transaction_id(), it_amount->get_amount());
+        top3_txs.emplace_back((*it_amount)->get_transaction_id(), (*it_amount)->get_amount());
     }
     report->top3_transactions = top3_txs;
 
-    // TOP-3 categories in terms of expenses
-    std::vector<std::pair<int, double>> category_amounts(by_category.begin(), by_category.end());
+    // TOP-3 categories in terms of expenses, use category map
+    std::vector<std::pair<int, double>> category_amounts(category_map.begin(), category_map.end());
     std::sort(category_amounts.begin(), category_amounts.end(), [](auto& a, auto& b) { return a.second > b.second; });
 
     if (category_amounts.size() > 3)
@@ -157,7 +168,10 @@ std::vector<std::unique_ptr<Report>> FinanceManager::generate_daily_report(
 {
     auto day_start = floor<days>(date);
     auto day_end = day_start + days{ 1 };
-    return { build_report(day_start, day_end) };
+
+    std::vector<std::unique_ptr<Report>> reports;
+    reports.push_back(build_report(day_start, day_end));
+    return reports;
 }
 
 std::vector<std::unique_ptr<Report>> FinanceManager::generate_weekly_report(
@@ -165,7 +179,10 @@ std::vector<std::unique_ptr<Report>> FinanceManager::generate_weekly_report(
 {
     auto start = floor<days>(week_start);
     auto end = start + days{ 7 };
-    return { build_report(start, end) };
+
+    std::vector<std::unique_ptr<Report>> reports;
+    reports.push_back(build_report(start, end));
+    return reports;
 }
 
 std::vector<std::unique_ptr<Report>> FinanceManager::generate_monthly_report(
@@ -174,5 +191,8 @@ std::vector<std::unique_ptr<Report>> FinanceManager::generate_monthly_report(
     year_month_day ymd{ year{my_year}, month{ static_cast<unsigned>(my_month) }, day{1} };
     auto start = sys_days{ ymd };
     auto end = start + months{ 1 };
-    return { build_report(start, end) };
+    
+    std::vector<std::unique_ptr<Report>> reports;
+    reports.push_back(build_report(start, end));
+    return reports;
 }

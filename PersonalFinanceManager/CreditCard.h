@@ -24,7 +24,7 @@ public:
 	double get_credit_limit() const { return credit_limit_; }
 	double get_current_debt() const { return current_debt_; }
 	double get_interest_rate() const { return interest_rate_; }
-	const std::string& get_card_type() const override { return "Debit card"; }
+	const std::string& get_card_type() const override { return "Credit card"; }
 
 	// Set current debt (Used in loading)
 	void set_current_debt(const double debt) { current_debt_ = debt; }

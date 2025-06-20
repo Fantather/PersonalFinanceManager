@@ -71,7 +71,7 @@ public:
 
 	/*--- Work with Categories ---*/
 	int add_category(const std::string& name, const int parentId = -1);
-	bool remove_category(const int category_id);					// returns false if not found
+	//bool remove_category(const int category_id);					// returns false if not found
 	Category* get_category(const int category_id);					// returns nullptr if not found		
 
 
@@ -82,7 +82,7 @@ public:
 	/*--- Work with Reports ---*/
 
 	// Helper methods
-	std::vector<const Transaction*> create_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end);
+	std::vector<std::shared_ptr<const Transaction>> create_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end);
 	std::unique_ptr<Report> build_report(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end);
 
 	// Generate reports

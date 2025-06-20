@@ -4,7 +4,7 @@
 // Provides a unified interface for Wallet and Card accounts
 class Account {
 protected:
-	int id_;		// Unique ID account
+	int id_;				// Unique ID account
 	std::string name_;		// On an example Visa Gold or PayPal
 	double balance_ = 0;	// Current balance
 

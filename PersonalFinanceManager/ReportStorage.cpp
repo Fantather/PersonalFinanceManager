@@ -13,9 +13,7 @@ static std::string format_timestamp(const std::chrono::system_clock::time_point&
 }
 
 // save_reports:
-bool ReportStorage::save_reports(
-    const std::vector<std::unique_ptr<Report>>& reports,
-    const std::string& filename)
+bool ReportStorage::save_reports(const std::vector<std::unique_ptr<Report>>& reports, const std::string& filename)
 {
     std::ofstream out(filename, std::ios::app);
     if (!out.is_open()) {

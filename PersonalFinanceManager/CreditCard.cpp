@@ -23,7 +23,7 @@ bool CreditCard::withdraw(const double amount)
 		return false;
 
 
-	double avaliable = amount + credit_limit_;		// The maximum possible amount of money to withdraw
+	double avaliable = amount + (credit_limit_ - current_debt_);		// The maximum possible amount of money to withdraw
 	if (amount > avaliable)
 		return false;
 
