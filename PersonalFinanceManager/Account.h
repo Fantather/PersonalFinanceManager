@@ -4,23 +4,21 @@
 // Provides a unified interface for Wallet and Card accounts
 class Account {
 protected:
-    int    id_;               // Unique account ID
-    std::string name_;        // Account name (e.g. "Main Wallet", "Visa Gold")
-    double balance_;          // Current balance
+	int id_;		// Unique ID account
+	std::string name_;		// On an example Visa Gold or PayPal
+	double balance_ = 0;	// Current balance
 
 public:
-    static const double default_initial_balance;  // Default starting balance
+	// Constructor and destructor
+	Account() = default;
+	Account(const int id, const std::string& name, const double initial_balance) : id_(id), name_(name), balance_(initial_balance){}
+	virtual ~Account() = default;
 
-    // Constructor & Destructor
-    Account(int id, const std::string& name, double initial_balance = default_initial_balance);
-    virtual ~Account() = default;
+	// Replenishment of account and money withdrawal
+	virtual bool deposit(const double amount);
+	virtual bool withdraw(const double amount);
 
-    // Deposit / Withdraw interface
-    virtual void deposit(double amount);
-    virtual bool withdraw(double amount);
-
-    // Getters
-    int              get_id() const { return id_; }
-    const std::string& get_name() const { return name_; }
-    double           get_balance() const { return balance_; }
+	// Getters
+	int get_id() const { return id_; }
+	const std::string& get_owner_name() const { return name_; }
 };

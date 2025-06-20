@@ -1,93 +1,91 @@
-﻿#include "FinanceManager.h"
-#include <iostream>
+﻿#include <iostream>
 #include <chrono>
-#include <iomanip>
+#include <thread>
 
-using namespace std;
-using namespace std::chrono;
-
-void print_report(const Report& r) {
-    auto start_c = system_clock::to_time_t(r.period_start);
-    auto end_c = system_clock::to_time_t(r.period_end);
-
-    std::tm tm_start{}, tm_end{};
-    localtime_s(&tm_start, &start_c);
-    localtime_s(&tm_end, &end_c);
-
-    std::cout << "Report from " << std::put_time(&tm_start, "%F") << " to " << std::put_time(&tm_end, "%F") << ":\n";
-    cout << "Total Income: " << r.total_income << "\n";
-    cout << "Total Expenses: " << r.total_expenses << "\n";
-
-    cout << "Expenses by Category:\n";
-    for (const auto& [cat, sum] : r.expenses_by_category) {
-        cout << "  Category " << cat << ": " << sum << "\n";
-    }
-
-    cout << "Top 3 Transactions:\n";
-    for (const auto& [id, amount] : r.top3_transactions) {
-        cout << "  TX" << id << ": " << amount << "\n";
-    }
-
-    cout << "Top 3 Categories:\n";
-    for (const auto& [cat, amount] : r.top3_categories) {
-        cout << "  Category " << cat << ": " << amount << "\n";
-    }
-    cout << "----------------------------\n";
-}
+#include "FinanceManager.h"
+#include "ReportStorage.h"
 
 int main() {
-    FinanceManager fm;
+    using namespace std::chrono;
 
-    // Создаем аккаунты
-    int wallet_id = fm.add_wallet("Main Wallet", 5000);
-    int food_cat_id = fm.add_category("Food");
-    int transport_cat_id = fm.add_category("Transport");
+    // Create manager
+    FinanceManager manager;
 
-    // Добавляем транзакции
-    auto now = system_clock::now();
-    fm.add_income(wallet_id, 30000, now - hours(48));  // 2 дня назад
-    fm.add_expense(wallet_id, 1500, food_cat_id, now - hours(24));  // вчера
-    fm.add_expense(wallet_id, 500, transport_cat_id, now - hours(12));  // сегодня
-    fm.add_expense(wallet_id, 2500, food_cat_id, now);  // сейчас
+    // Add accounts
+    int walletId = manager.add_wallet("MyWallet", 500.0);
 
-    // Генерируем отчеты
-    auto daily_reports = fm.generate_daily_report(now);
-    auto weekly_reports = fm.generate_weekly_report(now - days(7));
+    int debitCardId = manager.add_debitCard(
+        "Visa Gold",                          // name
+        "12345",                              // card_number (тип string!)
+        "Alice",                              // holder name
+        "12/26",                              // expiration date
+        1000.0                                // initial balance
+    );
 
-    // Сохраняем отчеты
-    vector<ReportStorage::PeriodType> types = {
-        ReportStorage::Daily,
-        ReportStorage::Weekly
-    };
+    int creditCardId = manager.add_creditCard(
+        "MasterCard Platinum",               // name
+        "9876-5432-1098-7654",               // card_number
+        "Bob",                               // holder name
+        "11/25",                             // expiration date
+        2000.0,                              // credit limit
+        0.18,                                // interest rate
+        500.0                                // initial balance
+    );
 
-    vector<unique_ptr<Report>> all_reports;
-    all_reports.push_back(move(daily_reports[0]));
-    all_reports.push_back(move(weekly_reports[0]));
+    // Add categories
+    int foodCat = manager.add_category("Food");
+    int transportCat = manager.add_category("Transport");
+    int entertainmentCat = manager.add_category("Entertainment");
 
-    fm.save_reports(all_reports, types, "reports.bin");
+    // Record some transactions
+    auto t0 = system_clock::now();
+    manager.add_income(walletId, 200.0, t0 - hours(24));        // yesterday income
+    manager.add_expense(walletId, 50.0, foodCat, t0 - hours(23));
+    manager.add_expense(debitCardId, 100.0, transportCat, t0 - hours(2));
+    manager.add_expense(creditCardId, 150.0, entertainmentCat, t0 - minutes(30));
+    manager.add_income(debitCardId, 300.0, t0 - minutes(15));
 
-    // Загружаем и выводим отчеты
-    vector<unique_ptr<Report>> loaded_reports;
-    vector<ReportStorage::PeriodType> loaded_types;
+    // Generate reports for today
+    auto today = floor<days>(t0);
+    auto dailyReports = manager.generate_daily_report(today + hours(12)); // midday to include all
+    auto weeklyReports = manager.generate_weekly_report(today);
+    auto monthlyReports = manager.generate_monthly_report(static_cast<int>(year_month_day{ year{2025}, month{6}, day{1} }.year().operator int()),
+        static_cast<unsigned>(year_month_day{ year{2025}, month{6}, day{1} }.month()));
 
-    if (fm.load_reports(loaded_reports, loaded_types, "reports.bin")) {
-        cout << "Loaded reports:\n";
-        for (size_t i = 0; i < loaded_reports.size(); ++i) {
-            cout << "Type: ";
-            switch (loaded_types[i]) {
-            case ReportStorage::Daily: cout << "Daily\n"; break;
-            case ReportStorage::Weekly: cout << "Weekly\n"; break;
-            case ReportStorage::Monthly: cout << "Monthly\n"; break;
-            }
-            print_report(*loaded_reports[i]);
-        }
+    // Save reports to file
+    const std::string filename = "reports.txt";
+    if (ReportStorage::save_reports(dailyReports, filename)) {
+        std::cout << "Daily reports saved to " << filename << std::endl;
     }
-    else {
-        cerr << "Failed to load reports!\n";
+    if (ReportStorage::save_reports(weeklyReports, filename)) {
+        std::cout << "Weekly reports appended to " << filename << std::endl;
+    }
+    if (ReportStorage::save_reports(monthlyReports, filename)) {
+        std::cout << "Monthly reports appended to " << filename << std::endl;
+    }
+
+    // Optionally, print a summary to console
+    for (const auto& reportPtr : dailyReports) {
+        const Report& r = *reportPtr;
+        std::cout << "--- Report Summary (Daily) ---" << std::endl;
+        std::cout << "Total expense: " << r.total_expence_ << std::endl;
+        std::cout << "Expenses by category:" << std::endl;
+        for (auto& [cid, sum] : r.expenses_by_category) {
+            std::cout << "  Category " << cid << ": " << sum << std::endl;
+        }
+        std::cout << "Top 3 transactions:" << std::endl;
+        for (auto& [txid, amt] : r.top3_transactions) {
+            std::cout << "  Tx " << txid << ": " << amt << std::endl;
+        }
+        std::cout << "Top 3 categories:" << std::endl;
+        for (auto& [cid, amt] : r.top3_categories) {
+            std::cout << "  Cat " << cid << ": " << amt << std::endl;
+        }
     }
 
     return 0;
 }
+
 
 
 // Третье задание

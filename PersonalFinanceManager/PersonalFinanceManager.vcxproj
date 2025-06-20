@@ -134,6 +134,7 @@
     <ClInclude Include="FinanceManager.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="ReportStorage.h" />
+    <ClInclude Include="TransactionMultiIndex.h" />
     <ClInclude Include="Transaction.h" />
     <ClInclude Include="Wallet.h" />
   </ItemGroup>

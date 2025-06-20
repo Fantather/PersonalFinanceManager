@@ -6,8 +6,8 @@
 
 class Income : public Transaction {
 public:
-    using Transaction::Transaction;
-    ~Income() override = default;
+	using Transaction::Transaction;
+	~Income() override = default;
 
-    bool is_expense() const override { return false; }
+	bool is_expence() const override { return false; }
 };
