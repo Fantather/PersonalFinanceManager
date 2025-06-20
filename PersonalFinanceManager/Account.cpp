@@ -1,23 +1,19 @@
 ﻿#include "Account.h"
 
-// Default initial balance
-const double Account::default_initial_balance = 0.0;
-
-// Constructor
-Account::Account(int id, const std::string& name, double initial_balance)
-    : id_(id), name_(name), balance_(initial_balance) {}
-
-// Replenish the bill
-void Account::deposit(double amount)
+bool Account::deposit(const double amount)
 {
-    if (amount <= 0.0) return;
-    balance_ += amount;
+	if (amount < 0)
+		return false;
+
+	balance_ += amount;
+	return true;
 }
 
-// Withdraw money
-bool Account::withdraw(double amount)
+bool Account::withdraw(const double amount)
 {
-    if (amount > balance_) return false;
-    balance_ -= amount;
-    return true;
+	if (amount < 0 || amount > balance_)
+		return false;
+
+	balance_ -= amount;
+	return true;
 }
